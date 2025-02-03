@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 
-mongoose.connect(process.env.DB_URL)
+mongoose
+  .connect(process.env.DB_URL)
   .then(() => {
-    console.log('Connected to db')
+    console.log("Connected to db");
   })
   .catch((err) => {
-    console.error(err)
-  })
+    console.error(err);
+  });
