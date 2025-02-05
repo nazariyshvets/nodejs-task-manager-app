@@ -1,5 +1,7 @@
 import { Router } from "express";
+import sharp from "sharp";
 import auth from "../middleware/auth.js";
+import upload from "../middleware/upload.js";
 import Task from "../models/task.js";
 
 const router = new Router();
@@ -100,6 +102,70 @@ router.delete("/tasks/:id", auth, async (req, res) => {
     }
 
     res.send(task);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
+
+router.post(
+  "/tasks/:id/image",
+  auth,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const task = await Task.findOne({
+        _id: req.params.id,
+        owner: req.user._id,
+      });
+
+      if (!task) {
+        return res.status(404).send();
+      }
+
+      task.image = await sharp(req.file.buffer)
+        .resize({ width: 100, height: 100 })
+        .png()
+        .toBuffer();
+      await task.save();
+      res.send(task);
+    } catch (err) {
+      res.status(500).send(err);
+    }
+  },
+);
+
+router.delete("/tasks/:id/image", auth, async (req, res) => {
+  try {
+    const task = await Task.findOne({
+      _id: req.params.id,
+      owner: req.user._id,
+    });
+
+    if (!task) {
+      return res.status(404).send();
+    }
+
+    task.image = undefined;
+    await task.save();
+    res.send();
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
+
+router.get("/tasks/:id/image", auth, async (req, res) => {
+  try {
+    const task = await Task.findOne({
+      _id: req.params.id,
+      owner: req.user._id,
+    });
+
+    if (!task) {
+      return res.status(404).send();
+    }
+
+    res.set("Content-Type", "image/png");
+    res.send(task.image);
   } catch (err) {
     res.status(500).send(err);
   }

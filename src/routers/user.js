@@ -1,22 +1,10 @@
 import { Router } from "express";
-import multer from "multer";
 import sharp from "sharp";
 import auth from "../middleware/auth.js";
+import upload from "../middleware/upload.js";
 import User from "../models/user.js";
 
 const router = new Router();
-const upload = multer({
-  limits: {
-    fileSize: 1_000_000,
-  },
-  fileFilter(req, file, cb) {
-    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-      cb(new Error("Please provide an image with jpg, jpeg or png extension"));
-    }
-
-    cb(undefined, true);
-  },
-});
 
 router.post("/users", async (req, res) => {
   const user = new User(req.body);
@@ -134,7 +122,7 @@ router.get("/users/:id/avatar", async (req, res) => {
       return res.status(404).send();
     }
 
-    res.set("Content-Type", "image/jpg");
+    res.set("Content-Type", "image/png");
     res.send(user.avatar);
   } catch {
     res.status(404).send();
